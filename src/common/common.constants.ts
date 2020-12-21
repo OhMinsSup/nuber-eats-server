@@ -6,5 +6,6 @@ export const NEW_ORDER_UPDATE = 'NEW_ORDER_UPDATE';
 
 export const RESULT_CODE = {
   SUCCESS: 10000,
+  FAILE: 10001,
   VALID_EMAIL: 20001,
 };

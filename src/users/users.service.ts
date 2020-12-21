@@ -7,11 +7,14 @@ import {
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import User from './entities/user.entity';
+import Verification from './entities/verification.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
   ) {}
 
   // 유저 생성
@@ -33,6 +36,17 @@ export class UserService {
       const user = await this.users.save(
         this.users.create({ email, password, role }),
       );
+
+      const verification = await this.verifications.save(
+        this.verifications.create({
+          user,
+        }),
+      );
+      console.log(verification);
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+      };
     } catch (e) {
       console.error(e);
       throw e;
