@@ -25,6 +25,7 @@
     "@nestjs/graphql": "^7.7.0",
     "@nestjs/platform-express": "^6.10.14",
     "apollo-server-express": "^2.18.2",
+    "bcrypt": "^5.0.0",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "graphql": "^15.3.0",
@@ -36,6 +37,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^3.0.0",
     "@nestjs/cli": "^6.13.2",
     "@nestjs/schematics": "^6.8.1",
     "@nestjs/testing": "^6.10.14",
