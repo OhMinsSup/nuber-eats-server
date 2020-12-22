@@ -7,6 +7,7 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import User from './users/entities/user.entity';
 import Verification from './users/entities/verification.entity';
 import { UserModule } from './users/users.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -43,6 +44,11 @@ import { UserModule } from './users/users.module';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+    }),
+    MailModule.forRoot({
+      apiKey: process.env.MAILGUN_API_KEY,
+      domain: process.env.MAILGUN_DOMAIN_NAME,
+      fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
     UserModule,
     RestaurantsModule,
