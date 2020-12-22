@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { RESULT_CODE } from 'src/common/common.constants';
 import { Repository } from 'typeorm';
+
+import { RESULT_CODE } from 'src/common/common.constants';
+import { MailService } from 'src/mail/mail.service';
+
+import User from './entities/user.entity';
+import Verification from './entities/verification.entity';
+
 import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
-import User from './entities/user.entity';
-import Verification from './entities/verification.entity';
 
 @Injectable()
 export class UserService {
@@ -15,6 +19,7 @@ export class UserService {
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Verification)
     private readonly verifications: Repository<Verification>,
+    private readonly mainService: MailService,
   ) {}
 
   // 유저 생성
@@ -25,6 +30,7 @@ export class UserService {
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
       const exists = await this.users.findOne({ email });
+
       if (exists) {
         return {
           ok: false,
@@ -42,7 +48,12 @@ export class UserService {
           user,
         }),
       );
-      console.log(verification);
+
+      this.mainService.sendVerificationEmail(
+        user.email,
+        verification.code,
+        false,
+      );
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
