@@ -9,6 +9,7 @@ import Verification from './users/entities/verification.entity';
 import { UserModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
 import UserProfile from './users/entities/userProfile.entity';
+import AuthToken from './users/entities/authToken.entity';
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import UserProfile from './users/entities/userProfile.entity';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User, Verification, UserProfile],
+      entities: [User, Verification, UserProfile, AuthToken],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
