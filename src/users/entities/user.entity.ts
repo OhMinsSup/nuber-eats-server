@@ -47,9 +47,9 @@ class User extends CoreEntity {
   @IsBoolean()
   verified: boolean;
 
+  // 패스워드 해시로 변경
   @BeforeInsert()
   @BeforeUpdate()
-  // 패스워드 해시로 변경
   async hashPassword(): Promise<void> {
     if (this.password) {
       try {
