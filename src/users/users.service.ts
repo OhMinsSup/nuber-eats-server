@@ -15,6 +15,8 @@ import {
 import UserProfile from './entities/userProfile.entity';
 import AuthToken from './entities/authToken.entity';
 import { JwtService } from 'src/jwt/jwt.service';
+import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { VerifyEmailOutput } from './dtos/verify-email.dto';
 
 @Injectable()
 export class UserService {
@@ -36,6 +38,106 @@ export class UserService {
       const user = await this.users.findOne({ id });
       if (!user) return null;
       return user;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 회원가입시 이메일 인증
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    try {
+      const verification = await this.verifications.findOne(
+        { code },
+        { relations: ['user'] },
+      );
+
+      if (!verification) {
+        return {
+          ok: false,
+          code: RESULT_CODE.NOT_FOUND_VERFICATION,
+          error: '이메일 인증을 메일을 통해서 인증을 해주세요.',
+        };
+      }
+
+      if (verification.user.verified) {
+        return {
+          ok: false,
+          code: RESULT_CODE.TOKEN_ALREADY_USED,
+          error: '이미 인증한 코드입니다.',
+        };
+      }
+
+      const diff =
+        new Date().getTime() - new Date(verification.createAt).getTime();
+      if (diff > 1000 * 60 * 60 * 24 || verification.user.verified) {
+        return {
+          ok: false,
+          code: RESULT_CODE.EXPIRED_CODE,
+          error: '이메일 인증코드가 만료되었습니다.',
+        };
+      }
+
+      verification.user.verified = true;
+
+      // 메일 인증여부 변경
+      const user = await this.users.save(verification.user);
+      // 인증에 성공한 경우 인증메일 테이블 삭제
+      await this.verifications.delete(verification.id);
+
+      // 유저 프로필 생성
+      await this.userProfies.save(
+        this.userProfies.create({
+          user,
+        }),
+      );
+
+      return { ok: true, code: RESULT_CODE.SUCCESS };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 유저 로그인
+  async login({ email, password }: LoginInput): Promise<LoginOutput> {
+    try {
+      // 유저가 존재하는지 체크
+      const user = await this.users.findOne(
+        {
+          email,
+        },
+        { select: ['id', 'password'] },
+      );
+
+      if (!user) {
+        return {
+          ok: false,
+          code: RESULT_CODE.NOT_FOUND_USER,
+          error: '존재하지않는 유저입니다. 회원가입을 해주세요.',
+          accessToken: null,
+          refreshToken: null,
+        };
+      }
+
+      // 비밀번호가 일치하는지 체크
+      const passwordCorrect = await user.checkPassword(password);
+      if (!passwordCorrect) {
+        return {
+          ok: false,
+          code: RESULT_CODE.EXISTS_PASSWORD,
+          error: '비밀번호가 일치하지않습니다.',
+          accessToken: null,
+          refreshToken: null,
+        };
+      }
+
+      const tokens = await this.generateUserToken(user.id);
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        ...tokens,
+      };
     } catch (e) {
       console.error(e);
       throw e;
