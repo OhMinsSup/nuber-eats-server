@@ -1,3 +1,6 @@
+import { createParamDecorator } from '@nestjs/common';
+import { Response } from 'express';
+
 export const CONFIG_OPTIONS = 'CONFIG_OPTIONS';
 export const PUB_SUB = 'PUB_SUB';
 export const NEW_PENDING_ORDER = 'NEW_PENDING_ORDER';
@@ -18,3 +21,7 @@ export const RESULT_CODE = {
   NOT_FOUND_USER: 40000,
   NOT_FOUND_VERFICATION: 40001,
 };
+
+export const ResGql = createParamDecorator(
+  (data, [root, args, ctx, info]): Response => ctx.res,
+);

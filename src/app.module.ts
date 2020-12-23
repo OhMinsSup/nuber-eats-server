@@ -8,6 +8,8 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Request, Response } from 'express';
+
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import User from './users/entities/user.entity';
 import Verification from './users/entities/verification.entity';
@@ -53,6 +55,43 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      context: ({
+        req,
+        res,
+        connection,
+      }: {
+        req: Request;
+        res: Response;
+        connection: any;
+      }) => {
+        let accessToken = null;
+        let refreshToken = null;
+
+        if (req) {
+          let token = req.cookies.access_token;
+          if (!token && req.headers['authorization']) {
+            // eslint-disable-next-line prefer-destructuring
+            token = req.headers['authorization'].split(' ')[1];
+          }
+
+          accessToken = token;
+          refreshToken = req.cookies.refresh_token;
+        } else {
+          accessToken = connection.context['access_token'];
+          refreshToken = connection.context['refresh_token'];
+        }
+
+        try {
+          console.log(accessToken, refreshToken);
+          return {
+            res,
+            accessToken,
+            refreshToken,
+          };
+        } catch (e) {
+          return {};
+        }
+      },
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,

@@ -17,6 +17,7 @@ import AuthToken from './entities/authToken.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
+import { setTokenCookie } from 'src/libs/cookies';
 
 @Injectable()
 export class UserService {
@@ -133,6 +134,7 @@ export class UserService {
       }
 
       const tokens = await this.generateUserToken(user.id);
+      // setTokenCookie(tokens);
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,

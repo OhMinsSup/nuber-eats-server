@@ -1,4 +1,8 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Response } from 'express';
+
+import { ResGql } from 'src/common/common.constants';
+import { setTokenCookie } from 'src/libs/cookies';
 
 import {
   CreateAccountInput,
@@ -23,8 +27,16 @@ export class UserResolver {
   }
 
   @Mutation(_ => LoginOutput)
-  async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
-    return this.usersService.login(loginInput);
+  async login(
+    @Args('input') loginInput: LoginInput,
+    @ResGql() res: Response,
+  ): Promise<LoginOutput> {
+    const result = await this.usersService.login(loginInput);
+    setTokenCookie(res, {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+    return result;
   }
 
   @Mutation(_ => VerifyEmailOutput)
