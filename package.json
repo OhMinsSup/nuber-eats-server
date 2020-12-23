@@ -33,6 +33,7 @@
     "class-validator": "^0.12.2",
     "cookie-parser": "^1.4.5",
     "cross-env": "^7.0.3",
+    "dataloader": "^2.0.0",
     "form-data": "^3.0.0",
     "got": "^11.8.1",
     "graphql": "^15.3.0",
