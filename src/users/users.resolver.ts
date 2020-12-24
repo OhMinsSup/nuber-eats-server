@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { ResGql } from 'src/common/common.constants';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { Role } from 'src/auth/role.decorator';
-import { setTokenCookie } from 'src/libs/cookies';
+import { setTokenCookie, setClearTokenCookie } from 'src/libs/cookies';
 
 import {
   CreateAccountInput,
@@ -41,6 +41,12 @@ export class UserResolver {
       refreshToken: result.refreshToken,
     });
     return result;
+  }
+
+  @Mutation(_ => Boolean)
+  logout(@ResGql() res: Response) {
+    setClearTokenCookie(res);
+    return true;
   }
 
   @Mutation(_ => VerifyEmailOutput)
