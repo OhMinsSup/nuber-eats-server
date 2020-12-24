@@ -1,25 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as DataLoader from 'dataloader';
 
 import { RESULT_CODE } from 'src/common/common.constants';
 import { MailService } from 'src/mail/mail.service';
+import { JwtService } from 'src/jwt/jwt.service';
 
 import User from './entities/user.entity';
 import Verification from './entities/verification.entity';
+import UserProfile from './entities/userProfile.entity';
+import AuthToken from './entities/authToken.entity';
 
 import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
-import UserProfile from './entities/userProfile.entity';
-import AuthToken from './entities/authToken.entity';
-import { JwtService } from 'src/jwt/jwt.service';
+
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
+import { normalize } from 'src/libs/utils';
 
 @Injectable()
 export class UserService {
+  private dataUserLoader: DataLoader<number, User, number>;
+
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Verification)
@@ -30,7 +35,20 @@ export class UserService {
     private readonly authTokens: Repository<AuthToken>,
     private readonly mainService: MailService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    this.dataUserLoader = new DataLoader<number, User>(
+      async (ids: number[]) => {
+        const users = await this.users.findByIds(ids, { relations: ['profile'] });
+        const normalized = normalize(users, user => user.id);
+        return ids.map(id => normalized[id]);
+      },
+    );
+  }
+
+  // dataloader를 이용한 data fetch
+  userLoader(id: number) {
+    return this.dataUserLoader.load(id);
+  }
 
   // 유저 Id를 통해서 유저 찾기
   async findById(id: number) {

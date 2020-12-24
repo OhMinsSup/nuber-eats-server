@@ -9,12 +9,12 @@ import User from './user.entity';
 @Entity()
 class UserProfile extends CoreEntity {
   @Column({ length: 255, nullable: true })
-  @Field(_ => String)
+  @Field(_ => String, { nullable: true })
   @IsString()
   displayName?: string;
 
   @Column({ length: 255, nullable: true, type: 'varchar' })
-  @Field(_ => String)
+  @Field(_ => String, { nullable: true })
   @IsUrl()
   thumbnail?: string;
 

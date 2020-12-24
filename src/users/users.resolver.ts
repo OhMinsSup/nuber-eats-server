@@ -51,6 +51,6 @@ export class UserResolver {
   @Query(_ => User)
   @Role(['Any'])
   me(@AuthUser() authUser: User) {
-    return authUser;
+    return this.usersService.userLoader(authUser.id);
   }
 }
