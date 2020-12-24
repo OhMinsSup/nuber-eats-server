@@ -20,6 +20,7 @@ import {
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { normalize } from 'src/libs/utils';
+import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -38,7 +39,9 @@ export class UserService {
   ) {
     this.dataUserLoader = new DataLoader<number, User>(
       async (ids: number[]) => {
-        const users = await this.users.findByIds(ids, { relations: ['profile'] });
+        const users = await this.users.findByIds(ids, {
+          relations: ['profile'],
+        });
         const normalized = normalize(users, user => user.id);
         return ids.map(id => normalized[id]);
       },
@@ -56,6 +59,32 @@ export class UserService {
       const user = await this.users.findOne({ id });
       if (!user) return null;
       return user;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 유저 프로필 정보
+  async getUserProfile({
+    userId,
+  }: UserProfileInput): Promise<UserProfileOutput> {
+    try {
+      const user = await this.userLoader(userId);
+      if (!user) {
+        return {
+          ok: false,
+          code: RESULT_CODE.NOT_FOUND_USER,
+          error: '유저가 존재하지 않습니다.',
+          user: null,
+        };
+      }
+
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        user,
+      };
     } catch (e) {
       console.error(e);
       throw e;

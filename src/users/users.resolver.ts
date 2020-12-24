@@ -16,6 +16,7 @@ import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 import User from './entities/user.entity';
 
 import { UserService } from './users.service';
+import { UserProfileOutput, UserProfileInput } from './dtos/user-profile.dto';
 
 @Resolver(_ => User)
 export class UserResolver {
@@ -52,5 +53,13 @@ export class UserResolver {
   @Role(['Any'])
   me(@AuthUser() authUser: User) {
     return this.usersService.userLoader(authUser.id);
+  }
+
+  @Query(_ => UserProfileOutput)
+  @Role(['Any'])
+  async userProfile(
+    @Args() userProfileInput: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    return this.usersService.getUserProfile(userProfileInput);
   }
 }
