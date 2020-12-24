@@ -19,6 +19,7 @@ import UserProfile from './users/entities/userProfile.entity';
 import AuthToken from './users/entities/authToken.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -74,15 +75,14 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
             token = req.headers['authorization'].split(' ')[1];
           }
 
-          accessToken = token;
-          refreshToken = req.cookies.refresh_token;
+          accessToken = token || null;
+          refreshToken = req.cookies.refresh_token || null;
         } else {
           accessToken = connection.context['access_token'];
           refreshToken = connection.context['refresh_token'];
         }
 
         try {
-          console.log(accessToken, refreshToken);
           return {
             res,
             accessToken,
@@ -101,6 +101,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
       domain: process.env.MAILGUN_DOMAIN_NAME,
       fromEmail: process.env.MAILGUN_FROM_EMAIL,
     }),
+    AuthModule,
     UserModule,
     RestaurantsModule,
   ],

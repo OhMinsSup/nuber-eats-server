@@ -63,8 +63,8 @@ export class JwtMiddleware implements NestMiddleware {
     }
 
     try {
-      if (!accessToken) {
-        return next();
+      if (!accessToken && !refreshToken) {
+        throw new Error('NoAccessToken');
       }
 
       const accessTokenData = await this.jwtService.decodeToken<

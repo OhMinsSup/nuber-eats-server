@@ -1,7 +1,9 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
 
 import { ResGql } from 'src/common/common.constants';
+import { AuthUser } from 'src/auth/auth-user.decorator';
+import { Role } from 'src/auth/role.decorator';
 import { setTokenCookie } from 'src/libs/cookies';
 
 import {
@@ -44,5 +46,11 @@ export class UserResolver {
     @Args('input') { code }: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
     return this.usersService.verifyEmail(code);
+  }
+
+  @Query(_ => User)
+  @Role(['Any'])
+  me(@AuthUser() authUser: User) {
+    return authUser;
   }
 }
