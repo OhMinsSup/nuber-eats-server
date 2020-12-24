@@ -20,6 +20,7 @@ export const RESULT_CODE = {
 
   NOT_FOUND_USER: 40000,
   NOT_FOUND_VERFICATION: 40001,
+  NOT_FOUND_USER_PROFILE: 40002,
 };
 
 export const ResGql = createParamDecorator(

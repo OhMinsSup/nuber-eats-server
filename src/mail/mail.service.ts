@@ -48,13 +48,10 @@ export class MailService {
     }
   }
 
-  sendVerificationEmail(email: string, code: string, registered: boolean) {
-    const keyword = registered ? '로그인' : '회원가입';
-
+  sendVerificationEmail(email: string, username: string, code: string) {
     this.sendEmail(email, '이메일 인증', 'email_template', [
-      { key: 'keyword', value: keyword },
       { key: 'code', value: code },
-      { key: 'username', value: email },
+      { key: 'username', value: username },
     ]);
   }
 }

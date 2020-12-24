@@ -21,6 +21,7 @@ import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { normalize } from 'src/libs/utils';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -34,7 +35,7 @@ export class UserService {
     private readonly userProfies: Repository<UserProfile>,
     @InjectRepository(AuthToken)
     private readonly authTokens: Repository<AuthToken>,
-    private readonly mainService: MailService,
+    private readonly mailService: MailService,
     private readonly jwtService: JwtService,
   ) {
     this.dataUserLoader = new DataLoader<number, User>(
@@ -59,6 +60,67 @@ export class UserService {
       const user = await this.users.findOne({ id });
       if (!user) return null;
       return user;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 유저 프로필 업데이트
+  async editProfile(
+    userId: number,
+    { email, password, displayName, thumbnail }: EditProfileInput,
+  ): Promise<EditProfileOutput> {
+    try {
+      const user = await this.users.findOne(userId);
+
+      // 이메일이 존재하는 경우
+      if (email) {
+        user.email = email;
+        user.verified = false;
+        // 기존에 존재하는 이메일 인증 테이블 삭제
+        await this.verifications.delete({ user: { id: user.id } });
+        // 그리고 새로 생성한다.
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        // 이메일 발송
+        this.mailService.sendVerificationEmail(
+          user.email,
+          user.username,
+          verification.code,
+        );
+      }
+
+      // 패스워드 변경
+      if (password) {
+        user.password = password;
+      }
+
+      await this.users.save(user);
+
+      const userProfile = await this.userProfies.findOne({ user });
+      if (!userProfile)
+        return {
+          ok: false,
+          code: RESULT_CODE.NOT_FOUND_USER_PROFILE,
+          error: '유저 프로필이 존재하지 않습니다.',
+        };
+
+      if (displayName) {
+        userProfile.displayName = displayName;
+      }
+
+      if (thumbnail) {
+        userProfile.thumbnail = thumbnail;
+      }
+
+      await this.userProfies.save(userProfile);
+
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+      };
     } catch (e) {
       console.error(e);
       throw e;
@@ -225,10 +287,10 @@ export class UserService {
         }),
       );
 
-      this.mainService.sendVerificationEmail(
+      this.mailService.sendVerificationEmail(
         user.email,
+        user.username,
         verification.code,
-        false,
       );
       return {
         ok: true,
