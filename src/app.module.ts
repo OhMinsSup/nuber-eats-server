@@ -20,6 +20,9 @@ import AuthToken from './users/entities/authToken.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
+import Restaurant from './restaurants/entities/restaurant.entity';
+import Dish from './restaurants/entities/dish.entity';
+import Category from './restaurants/entities/cetegory.entity';
 
 @Module({
   imports: [
@@ -52,7 +55,15 @@ import { AuthModule } from './auth/auth.module';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [User, Verification, UserProfile, AuthToken],
+      entities: [
+        User,
+        Verification,
+        UserProfile,
+        AuthToken,
+        Restaurant,
+        Dish,
+        Category,
+      ],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,

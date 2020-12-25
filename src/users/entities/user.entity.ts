@@ -5,11 +5,19 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToOne } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import UserProfile from './userProfile.entity';
+import Restaurant from 'src/restaurants/entities/restaurant.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -48,9 +56,19 @@ class User extends CoreEntity {
   @IsBoolean()
   verified: boolean;
 
-  @Field(type => UserProfile)
-  @OneToOne(type => UserProfile, profile => profile.user)
+  @Field(_ => UserProfile)
+  @OneToOne(
+    _ => UserProfile,
+    profile => profile.user,
+  )
   profile: UserProfile;
+
+  @Field(_ => [Restaurant])
+  @OneToMany(
+    _ => Restaurant,
+    restaurant => restaurant.owner,
+  )
+  restaurants: Restaurant[];
 
   // 패스워드 해시로 변경
   @BeforeInsert()
