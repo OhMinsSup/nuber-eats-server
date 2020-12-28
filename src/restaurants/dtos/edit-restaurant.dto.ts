@@ -1,10 +1,16 @@
-import { Field, InputType, ObjectType, PartialType } from '@nestjs/graphql';
+import {
+  Field,
+  InputType,
+  Int,
+  ObjectType,
+  PartialType,
+} from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 import { CreateRestaurantInput } from './create-restaurant.dto';
 
 @InputType()
 export class EditRestaurantInput extends PartialType(CreateRestaurantInput) {
-  @Field(_ => Number)
+  @Field(_ => Int)
   restaurantId: number;
 }
 
