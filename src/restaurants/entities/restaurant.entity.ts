@@ -13,7 +13,7 @@ class Restaurant extends CoreEntity {
   @Field(_ => String)
   @Column()
   @IsString()
-  @Length(5)
+  @Length(2)
   name: string;
 
   @Field(_ => String)

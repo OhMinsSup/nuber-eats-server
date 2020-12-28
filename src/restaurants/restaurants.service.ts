@@ -7,6 +7,11 @@ import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
 } from './dtos/create-restaurant.dto';
+import {
+  EditRestaurantInput,
+  EditRestaurantOutput,
+} from './dtos/edit-restaurant.dto';
+import Category from './entities/cetegory.entity';
 import Dish from './entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
 import { CategoryRepository } from './repositories/category.repository';
@@ -38,6 +43,57 @@ export class RestaurantService {
         ok: true,
         code: RESULT_CODE.SUCCESS,
         restaurantId: newRestaurant.id,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 가게 수정
+  async editRestaurant(
+    owner: User,
+    editRestaurantInput: EditRestaurantInput,
+  ): Promise<EditRestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne(
+        editRestaurantInput.restaurantId,
+      );
+
+      if (!restaurant) {
+        return {
+          ok: false,
+          code: RESULT_CODE.NOT_FOUND_RESTAURANT,
+          error: '레스토랑을 찾을 수 없습니다.',
+        };
+      }
+
+      if (owner.id !== restaurant.ownerId) {
+        return {
+          ok: false,
+          code: RESULT_CODE.AUTHENTICATION_ERROR,
+          error: '소유하지 않은 레스토랑은 수정 할 수 없습니다.',
+        };
+      }
+
+      let category: Category | null = null;
+      if (editRestaurantInput.categoryName) {
+        category = await this.categories.getOrCreate(
+          editRestaurantInput.categoryName,
+        );
+      }
+
+      await this.restaurants.save([
+        {
+          id: editRestaurantInput.restaurantId,
+          ...editRestaurantInput,
+          ...(category && { category }),
+        },
+      ]);
+
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
       };
     } catch (e) {
       console.error(e);
