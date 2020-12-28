@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as DataLoader from 'dataloader';
 import { RESULT_CODE } from 'src/common/common.constants';
+import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import {
@@ -23,22 +25,40 @@ import { CategoryRepository } from './repositories/category.repository';
 
 @Injectable()
 export class RestaurantService {
+  private dataRestaurantLoader: DataLoader<number, Restaurant, number>;
+
   constructor(
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
     private readonly categories: CategoryRepository,
-  ) {}
+  ) {
+    this.dataRestaurantLoader = new DataLoader<number, Restaurant>(
+      async (ids: number[]) => {
+        const restaurants = await this.restaurants.findByIds(ids, {
+          relations: ['menu'],
+        });
+        const normalized = normalize(restaurants, restaurant => restaurant.id);
+        return ids.map(id => normalized[id]);
+      },
+    );
+  }
+
+  // dataloader를 이용한 data fetch
+  userLoader(id: number) {
+    return this.dataRestaurantLoader.load(id);
+  }
 
   // 가게 찾기
   async findRestaurantById({
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne(restaurantId, {
-        relations: ['menu'],
-      });
+      // const restaurant = await this.restaurants.findOne(restaurantId, {
+      //   relations: ['menu'],
+      // });
+      const restaurant = await this.userLoader(restaurantId);
       if (!restaurant) {
         return {
           ok: false,
