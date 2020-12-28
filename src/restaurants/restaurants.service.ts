@@ -18,6 +18,7 @@ import {
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
+import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 import Category from './entities/cetegory.entity';
 import Dish from './entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
@@ -48,6 +49,32 @@ export class RestaurantService {
   // dataloader를 이용한 data fetch
   userLoader(id: number) {
     return this.dataRestaurantLoader.load(id);
+  }
+
+  // 가게 리스트
+  async allRestaurants({
+    page,
+    pageSize,
+  }: RestaurantsInput): Promise<RestaurantsOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        order: {
+          isPromoted: 'DESC',
+        },
+      });
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        results: restaurants,
+        totalPages: Math.ceil(totalResults / pageSize),
+        totalResults,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   }
 
   // 가게 찾기
