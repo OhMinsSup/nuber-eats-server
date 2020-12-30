@@ -3,7 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import type { SignOptions } from 'jsonwebtoken';
 
 import { CONFIG_OPTIONS } from 'src/common/common.constants';
-import { JwtModuleOptions } from './jwt.interfact';
+import { JwtModuleOptions } from './jwt.interface';
 
 @Injectable()
 export class JwtService {
