@@ -6,7 +6,7 @@ export class PaginationInput {
   @Field(_ => Int, { defaultValue: 1 })
   page: number;
 
-  @Field(_ => Int, { defaultValue: 3 })
+  @Field(_ => Int, { defaultValue: 25 })
   pageSize: number;
 }
 

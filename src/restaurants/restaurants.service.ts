@@ -4,7 +4,7 @@ import * as DataLoader from 'dataloader';
 import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -19,6 +19,7 @@ import {
 } from './dtos/edit-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
+import { SearchRestaurantInput, SearchRestaurantOutput } from './dtos/search-restaurant.dto';
 import Category from './entities/cetegory.entity';
 import Dish from './entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
@@ -72,6 +73,33 @@ export class RestaurantService {
         totalResults,
       };
     } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 가게 검색
+  async searchRestaurantByName({
+    query,
+    page,
+    pageSize
+  }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        where: {
+          name: Raw(name => `${name} ILIKE '%${query}%'`),
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      });
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        restaurants,
+        totalResults,
+        totalPages: Math.ceil(totalResults / 25),
+      };
+    } catch(e) {
       console.error(e);
       throw e;
     }

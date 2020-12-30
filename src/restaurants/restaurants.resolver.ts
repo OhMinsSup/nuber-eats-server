@@ -2,6 +2,10 @@ import { Args, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { Role } from 'src/auth/role.decorator';
 import User from 'src/users/entities/user.entity';
+import Restaurant from './entities/restaurant.entity';
+
+import { RestaurantService } from './restaurants.service';
+
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -16,13 +20,18 @@ import {
 } from './dtos/edit-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
-
-import Restaurant from './entities/restaurant.entity';
-import { RestaurantService } from './restaurants.service';
+import { SearchRestaurantInput, SearchRestaurantOutput } from './dtos/search-restaurant.dto';
 
 @Resolver(of => Restaurant)
 export class RestaurantResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
+
+  @Query(_ => SearchRestaurantOutput)
+  searchRestaurant(
+    @Args('input') searchRestaurantInput: SearchRestaurantInput,
+  ): Promise<SearchRestaurantOutput> {
+    return this.restaurantService.searchRestaurantByName(searchRestaurantInput);
+  }
 
   @Query(_ => RestaurantOutput)
   restaurant(
