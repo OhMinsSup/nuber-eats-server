@@ -5,6 +5,8 @@ import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
 import { Raw, Repository } from 'typeorm';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
+import { CategoryInput, CategoryOutput } from './dtos/category';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -19,7 +21,10 @@ import {
 } from './dtos/edit-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
-import { SearchRestaurantInput, SearchRestaurantOutput } from './dtos/search-restaurant.dto';
+import {
+  SearchRestaurantInput,
+  SearchRestaurantOutput,
+} from './dtos/search-restaurant.dto';
 import Category from './entities/cetegory.entity';
 import Dish from './entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
@@ -82,7 +87,7 @@ export class RestaurantService {
   async searchRestaurantByName({
     query,
     page,
-    pageSize
+    pageSize,
   }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
     try {
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
@@ -99,7 +104,7 @@ export class RestaurantService {
         totalResults,
         totalPages: Math.ceil(totalResults / 25),
       };
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       throw e;
     }
@@ -232,6 +237,69 @@ export class RestaurantService {
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  //  ============= category =============== //
+
+  // 카테고리에 해당하는 레스토랑 수
+  countRestaurants(category: Category) {
+    return this.restaurants.count({ category });
+  }
+
+  // 모든 카테고리 정보
+  async allCategories(): Promise<AllCategoriesOutput> {
+    try {
+      const categories = await this.categories.find();
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        categories,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 카테고리에 해당하는 가게 정보 리스트
+  async findCategoryBySlug({
+    slug,
+    page,
+    pageSize,
+  }: CategoryInput): Promise<CategoryOutput> {
+    try {
+      const category = await this.categories.findOne({ slug });
+      if (!category) {
+        return {
+          ok: false,
+          code: RESULT_CODE.NOT_FOUND_CATEGORY,
+          error: '카테고리가 존재하지 않습니다.',
+        };
+      }
+
+      const restaurants = await this.restaurants.find({
+        where: {
+          category,
+        },
+        order: {
+          isPromoted: 'DESC',
+        },
+        take: pageSize,
+        skip: (page - 1) * pageSize,
+      });
+
+      const totalResults = await this.countRestaurants(category);
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        restaurants,
+        category,
+        totalPages: Math.ceil(totalResults / 25),
       };
     } catch (e) {
       console.error(e);
