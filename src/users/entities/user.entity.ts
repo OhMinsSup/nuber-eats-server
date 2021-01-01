@@ -18,6 +18,7 @@ import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import UserProfile from './userProfile.entity';
 import Restaurant from 'src/restaurants/entities/restaurant.entity';
+import Order from 'src/orders/entities/order.entity';
 
 export enum UserRole {
   Client = 'Client',
@@ -69,6 +70,20 @@ class User extends CoreEntity {
     restaurant => restaurant.owner,
   )
   restaurants: Restaurant[];
+
+  @Field(_ => [Order])
+  @OneToMany(
+    _ => Order,
+    order => order.customer,
+  )
+  orders: Order[];
+
+  @Field(_ => [Order])
+  @OneToMany(
+    _ => Order,
+    order => order.driver,
+  )
+  rides: Order[];
 
   // 패스워드 해시로 변경
   @BeforeInsert()

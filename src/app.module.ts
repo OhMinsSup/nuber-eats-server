@@ -23,6 +23,9 @@ import { AuthModule } from './auth/auth.module';
 import Restaurant from './restaurants/entities/restaurant.entity';
 import Dish from './restaurants/entities/dish.entity';
 import Category from './restaurants/entities/cetegory.entity';
+import Order from './orders/entities/order.entity';
+import OrderItem from './orders/entities/order-item.entity';
+import { OrderModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -63,6 +66,8 @@ import Category from './restaurants/entities/cetegory.entity';
         Restaurant,
         Dish,
         Category,
+        Order,
+        OrderItem,
       ],
     }),
     GraphQLModule.forRoot({
@@ -115,6 +120,7 @@ import Category from './restaurants/entities/cetegory.entity';
     AuthModule,
     UserModule,
     RestaurantsModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],
