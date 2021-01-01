@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import DataLoader from 'dataloader';
+import * as DataLoader from 'dataloader';
 import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
 import Dish from 'src/restaurants/entities/dish.entity';
