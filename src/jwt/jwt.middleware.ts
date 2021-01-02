@@ -63,7 +63,7 @@ export class JwtMiddleware implements NestMiddleware {
     }
 
     try {
-      if (!accessToken && !refreshToken) {
+      if (!accessToken) {
         throw new Error('NoAccessToken');
       }
 

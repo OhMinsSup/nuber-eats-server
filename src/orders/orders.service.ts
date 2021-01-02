@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
 import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
+import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import OrderItem from './entities/order-item.entity';
 import Order, { OrderStatus } from './entities/order.entity';
 
@@ -71,6 +72,50 @@ export class OrderService {
         ok: true,
         code: RESULT_CODE.SUCCESS,
         order,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 주문 리스트
+  async getOrders(
+    user: User,
+    { status }: GetOrdersInput,
+  ): Promise<GetOrdersOutput> {
+    try {
+      let orders: Order[];
+      if (user.role === UserRole.Client) {
+        orders = await this.orders.find({
+          where: {
+            customer: user,
+            ...(status && { status }),
+          },
+        });
+      } else if (user.role === UserRole.Delivery) {
+        orders = await this.orders.find({
+          where: {
+            driver: user,
+            ...(status && { status }),
+          },
+        });
+      } else if (user.role === UserRole.Owner) {
+        const restaurants = await this.restaurants.find({
+          where: {
+            owner: user,
+          },
+          relations: ['orders'],
+        });
+        orders = restaurants.map(restaurant => restaurant.orders).flat(1);
+        if (status) {
+          orders = orders.filter(order => order.status === status);
+        }
+      }
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        orders,
       };
     } catch (e) {
       console.error(e);
