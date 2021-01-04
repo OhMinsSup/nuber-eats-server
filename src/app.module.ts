@@ -1,10 +1,5 @@
 import * as Joi from 'joi';
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,7 +13,6 @@ import { MailModule } from './mail/mail.module';
 import UserProfile from './users/entities/userProfile.entity';
 import AuthToken from './users/entities/authToken.entity';
 import { JwtModule } from './jwt/jwt.module';
-import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import Restaurant from './restaurants/entities/restaurant.entity';
 import Dish from './restaurants/entities/dish.entity';
@@ -126,11 +120,3 @@ import { OrderModule } from './orders/orders.module';
   providers: [],
 })
 export class AppModule {}
-// export class AppModule implements NestModule {
-//   configure(consumer: MiddlewareConsumer) {
-//     consumer.apply(JwtMiddleware).forRoutes({
-//       path: '/graphql',
-//       method: RequestMethod.POST,
-//     });
-//   }
-// }
