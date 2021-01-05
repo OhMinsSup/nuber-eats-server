@@ -261,7 +261,9 @@ export class UserService {
     role,
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
-      const exists = await this.users.findOne({ email, username });
+      const exists = await this.users.findOne({
+        where: [{ email }, { username }],
+      });
 
       if (exists) {
         return {

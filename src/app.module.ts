@@ -66,6 +66,10 @@ import { OrderModule } from './orders/orders.module';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      cors: {
+        origin: [/^http:\/\/localhost/],
+        credentials: true,
+      },
       context: ({
         req,
         res,
