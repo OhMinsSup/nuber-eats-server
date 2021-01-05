@@ -20,6 +20,7 @@ import Category from './restaurants/entities/cetegory.entity';
 import Order from './orders/entities/order.entity';
 import OrderItem from './orders/entities/order-item.entity';
 import { OrderModule } from './orders/orders.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -120,7 +121,7 @@ import { OrderModule } from './orders/orders.module';
     RestaurantsModule,
     OrderModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}

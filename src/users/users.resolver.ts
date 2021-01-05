@@ -78,9 +78,4 @@ export class UserResolver {
   ): Promise<EditProfileOutput> {
     return this.usersService.editProfile(authUser.id, editProfileInput);
   }
-
-  @Query(_ => String)
-  _version(): string {
-    return '1.0';
-  }
 }
