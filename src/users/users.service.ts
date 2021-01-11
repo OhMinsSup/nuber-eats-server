@@ -216,7 +216,7 @@ export class UserService {
         {
           email,
         },
-        { select: ['id', 'password'] },
+        { select: ['id', 'password', 'verified'] },
       );
 
       if (!user) {
@@ -224,6 +224,18 @@ export class UserService {
           ok: false,
           code: RESULT_CODE.NOT_FOUND_USER,
           error: '존재하지않는 유저입니다. 회원가입을 해주세요.',
+          userId: null,
+          accessToken: null,
+          refreshToken: null,
+        };
+      }
+
+      if (!user.verified) {
+        return {
+          ok: false,
+          code: RESULT_CODE.USER_VERFIED_ERROR,
+          error: '이메일 인증이 안된 계정입니다.',
+          userId: null,
           accessToken: null,
           refreshToken: null,
         };
@@ -236,6 +248,7 @@ export class UserService {
           ok: false,
           code: RESULT_CODE.EXISTS_PASSWORD,
           error: '비밀번호가 일치하지않습니다.',
+          userId: null,
           accessToken: null,
           refreshToken: null,
         };
@@ -245,6 +258,7 @@ export class UserService {
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
+        userId: user.id,
         ...tokens,
       };
     } catch (e) {

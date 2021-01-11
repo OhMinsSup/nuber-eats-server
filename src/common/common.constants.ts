@@ -29,6 +29,7 @@ export const RESULT_CODE = {
   AUTHENTICATION_ERROR: 50001,
   ORDER_INFO_NOT_SEE_ERROR: 50002,
   ORDER_INFO_NOT_EDIT_ERROR: 50003,
+  USER_VERFIED_ERROR: 50004,
 };
 
 export const ResGql = createParamDecorator(

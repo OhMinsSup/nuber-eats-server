@@ -1,4 +1,4 @@
-import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
 import User from '../entities/user.entity';
 
@@ -11,4 +11,6 @@ export class LoginOutput extends CoreOutput {
   accessToken?: string;
   @Field(_ => String, { nullable: true })
   refreshToken?: string;
+  @Field(_ => Int, { nullable: true })
+  userId?: number;
 }
