@@ -21,6 +21,8 @@ import Order from './orders/entities/order.entity';
 import OrderItem from './orders/entities/order-item.entity';
 import { OrderModule } from './orders/orders.module';
 import { AppController } from './app.controller';
+import RestaurantScore from './restaurants/entities/restaurant-score.entity';
+import RestaurantLike from './restaurants/entities/restaurant-like.entity';
 
 @Module({
   imports: [
@@ -59,6 +61,8 @@ import { AppController } from './app.controller';
         UserProfile,
         AuthToken,
         Restaurant,
+        RestaurantScore,
+        RestaurantLike,
         Dish,
         Category,
         Order,

@@ -26,6 +26,10 @@ import {
 } from './dtos/search-restaurant.dto';
 import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 import { MyRestaurantInput, MyRestaurantOutput } from './dtos/my-restaurant';
+import {
+  GetRestaurantsInput,
+  GetRestaurantsOutput,
+} from './dtos/get-restaurants.dto';
 
 @Resolver(of => Restaurant)
 export class RestaurantResolver {
@@ -45,11 +49,29 @@ export class RestaurantResolver {
     return this.restaurantService.findRestaurantById(restaurantInput);
   }
 
+  /**
+   * @version 1.0
+   * @deprecated
+   * @description 무한 스크롤링 추가로 인한 삭제
+   * @param restaurantsInput
+   */
   @Query(_ => RestaurantsOutput)
   restaurants(
     @Args('input') restaurantsInput: RestaurantsInput,
   ): Promise<RestaurantsOutput> {
     return this.restaurantService.allRestaurants(restaurantsInput);
+  }
+
+  /**
+   * @version 1.1
+   * @description 추가 API 가게 리스트 정보 (무한 스크롤)
+   * @param getRestaurantsInput
+   */
+  @Query(_ => GetRestaurantsOutput)
+  getRestaurants(
+    @Args('input') getRestaurantsInput: GetRestaurantsInput,
+  ): Promise<GetRestaurantsOutput> {
+    return this.restaurantService.getRestaurants(getRestaurantsInput);
   }
 
   @Mutation(_ => CreateRestaurantOutput)

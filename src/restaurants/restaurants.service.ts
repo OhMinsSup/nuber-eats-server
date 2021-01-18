@@ -5,7 +5,10 @@ import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
 import { Raw, Repository } from 'typeorm';
-import { AllCategoriesOutput } from './dtos/all-categories.dto';
+import {
+  AllCategoriesInput,
+  AllCategoriesOutput,
+} from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import {
@@ -22,6 +25,10 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import {
+  GetRestaurantsInput,
+  GetRestaurantsOutput,
+} from './dtos/get-restaurants.dto';
 import { MyRestaurantInput, MyRestaurantOutput } from './dtos/my-restaurant';
 import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
@@ -34,17 +41,17 @@ import Category from './entities/cetegory.entity';
 import Dish from './entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
 import { CategoryRepository } from './repositories/category.repository';
+import { RestaurantRepository } from './repositories/restaurant.repository';
 
 @Injectable()
 export class RestaurantService {
   private dataRestaurantLoader: DataLoader<number, Restaurant, number>;
 
   constructor(
-    @InjectRepository(Restaurant)
-    private readonly restaurants: Repository<Restaurant>,
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
     private readonly categories: CategoryRepository,
+    private readonly restaurants: RestaurantRepository,
   ) {
     this.dataRestaurantLoader = new DataLoader<number, Restaurant>(
       async (ids: number[]) => {
@@ -91,6 +98,27 @@ export class RestaurantService {
         restaurant,
         ok: true,
         code: RESULT_CODE.SUCCESS,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  // 가게 리스트 (무한 스크롤)
+  async getRestaurants(
+    getRestaurantsInput: GetRestaurantsInput,
+  ): Promise<GetRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurants.getRestaurants(
+        getRestaurantsInput.cursor,
+        getRestaurantsInput.limit,
+      );
+
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        restaurants,
       };
     } catch (e) {
       console.error(e);
@@ -293,9 +321,15 @@ export class RestaurantService {
   }
 
   // 모든 카테고리 정보
-  async allCategories(): Promise<AllCategoriesOutput> {
+  async allCategories(
+    allCategoriesInput: AllCategoriesInput,
+  ): Promise<AllCategoriesOutput> {
     try {
-      const categories = await this.categories.find();
+      const categories = await this.categories.getCategoroes(
+        allCategoriesInput.cursor,
+        allCategoriesInput.limit,
+      );
+
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,

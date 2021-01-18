@@ -1,9 +1,16 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+export enum SortingType {
+  Alphabetical = 'alphabetical',
+  Trending = 'trending',
+}
+
+registerEnumType(SortingType, { name: 'SortingType' });
 
 @ObjectType()
 class CoreEntity {
