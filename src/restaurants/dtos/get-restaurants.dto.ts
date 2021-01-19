@@ -13,6 +13,6 @@ export class GetRestaurantsInput {
 
 @ObjectType()
 export class GetRestaurantsOutput extends CoreOutput {
-  @Field(_ => [Restaurant], { nullable: true })
-  restaurants?: Restaurant[];
+  @Field(_ => [Restaurant])
+  restaurants: Restaurant[];
 }

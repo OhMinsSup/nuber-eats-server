@@ -6,7 +6,7 @@ export class RestaurantRepository extends Repository<Restaurant> {
   async getRestaurants(cursor?: number, limit = 40) {
     if (!cursor) {
       return this.find({
-        relations: ['orders', 'category'],
+        relations: ['orders', 'category', 'owner'],
         order: {
           isPromoted: 'DESC',
           id: 'ASC',
@@ -22,7 +22,7 @@ export class RestaurantRepository extends Repository<Restaurant> {
     }
 
     const restaurants = await this.find({
-      relations: ['orders', 'category'],
+      relations: ['orders', 'category', 'owner'],
       where: {
         id: Raw(alias => `${alias} != :id and not ${alias} < :id`, {
           id: cursor,
