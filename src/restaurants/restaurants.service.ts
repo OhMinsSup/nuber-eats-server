@@ -40,6 +40,7 @@ import {
 import Category from './entities/cetegory.entity';
 import Dish from './entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
+import RestaurantMeta from './entities/restaurant.meta.entity';
 import { CategoryRepository } from './repositories/category.repository';
 import { RestaurantRepository } from './repositories/restaurant.repository';
 
@@ -50,6 +51,8 @@ export class RestaurantService {
   constructor(
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
+    @InjectRepository(RestaurantMeta)
+    private readonly metas: Repository<RestaurantMeta>,
     private readonly categories: CategoryRepository,
     private readonly restaurants: RestaurantRepository,
   ) {
@@ -155,23 +158,17 @@ export class RestaurantService {
   // 가게 검색
   async searchRestaurantByName({
     query,
-    page,
-    pageSize,
+    type,
   }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
     try {
-      const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        where: {
-          name: Raw(name => `${name} ILIKE '%${query}%'`),
-        },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
+      const restaurants = await this.restaurants.searchInputRestaurantNames(
+        query,
+        type,
+      );
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
         restaurants,
-        totalResults,
-        totalPages: Math.ceil(totalResults / 25),
       };
     } catch (e) {
       console.error(e);
@@ -184,9 +181,6 @@ export class RestaurantService {
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      // const restaurant = await this.restaurants.findOne(restaurantId, {
-      //   relations: ['menu'],
-      // });
       const restaurant = await this.userLoader(restaurantId);
       if (!restaurant) {
         return {
@@ -219,6 +213,11 @@ export class RestaurantService {
       );
       newRestaurant.category = category;
       await this.restaurants.save(newRestaurant);
+
+      const newMeta = this.metas.create(createRestaurantInput);
+      newMeta.restaurant = newRestaurant;
+      await this.metas.save(newMeta);
+
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,

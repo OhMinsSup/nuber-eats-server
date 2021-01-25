@@ -1,8 +1,27 @@
-import { EntityRepository, Repository, Raw } from 'typeorm';
+import { EntityRepository, Repository, Raw, FindOperator } from 'typeorm';
+import { SearchTypeStatus } from '../dtos/search-restaurant.dto';
 import Restaurant from '../entities/restaurant.entity';
 
 @EntityRepository(Restaurant)
 export class RestaurantRepository extends Repository<Restaurant> {
+  searchInputRestaurantNames(query: string, type: SearchTypeStatus) {
+    let openTime: FindOperator<any>;
+    if (type === SearchTypeStatus.Deliver) {
+      openTime = Raw(openTime => ``);
+    } else if (type === SearchTypeStatus.Shedule) {
+      // timeQuery = '';
+    }
+
+    return this.find({
+      relations: ['meta'],
+      where: {
+        name: Raw(name => `${name} ILIKE '%${query}%'`),
+        address: Raw(address => `${address} ILIKE '%${query}%'`),
+      },
+      take: 25,
+    });
+  }
+
   async getRestaurants(cursor?: number, limit = 40) {
     if (!cursor) {
       return this.find({

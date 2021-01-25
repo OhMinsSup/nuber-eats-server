@@ -23,6 +23,7 @@ import { OrderModule } from './orders/orders.module';
 import { AppController } from './app.controller';
 import RestaurantScore from './restaurants/entities/restaurant-score.entity';
 import RestaurantLike from './restaurants/entities/restaurant-like.entity';
+import RestaurantMeta from './restaurants/entities/restaurant.meta.entity';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import RestaurantLike from './restaurants/entities/restaurant-like.entity';
         Restaurant,
         RestaurantScore,
         RestaurantLike,
+        RestaurantMeta,
         Dish,
         Category,
         Order,

@@ -35,6 +35,11 @@ import {
 export class RestaurantResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
+  /**
+   * @version 1.2
+   * @description 변경 API 가게 검색 API (주소및 이름으로 검색, meta 데이터 추가)
+   * @param searchRestaurantInput
+   */
   @Query(_ => SearchRestaurantOutput)
   searchRestaurant(
     @Args('input') searchRestaurantInput: SearchRestaurantInput,
@@ -74,6 +79,11 @@ export class RestaurantResolver {
     return this.restaurantService.getRestaurants(getRestaurantsInput);
   }
 
+  /**
+   * @version 1.2
+   * @description 변경 API 가게 등록 (meta 데이터 추가)
+   * @param createRestaurantInput
+   */
   @Mutation(_ => CreateRestaurantOutput)
   @Role(['Owner'])
   createRestaurant(

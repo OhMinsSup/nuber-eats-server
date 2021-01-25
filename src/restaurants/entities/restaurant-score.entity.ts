@@ -3,7 +3,9 @@ import { IsString, Max, Min } from 'class-validator';
 import User from 'src/users/entities/user.entity';
 import CoreEntity from 'src/common/entities/core.entity';
 import Restaurant from './restaurant.entity';
+import { ObjectType } from '@nestjs/graphql';
 
+@ObjectType()
 @Entity()
 class RestaurantScore extends CoreEntity {
   @IsString()

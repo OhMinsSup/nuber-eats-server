@@ -4,6 +4,7 @@ import { CategoryResolver } from './category.resolver';
 import { DishResolver } from './dish.resolver';
 
 import Dish from './entities/dish.entity';
+import RestaurantMeta from './entities/restaurant.meta.entity';
 
 import { CategoryRepository } from './repositories/category.repository';
 import { RestaurantRepository } from './repositories/restaurant.repository';
@@ -12,7 +13,12 @@ import { RestaurantService } from './restaurants.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Dish, CategoryRepository, RestaurantRepository]),
+    TypeOrmModule.forFeature([
+      Dish,
+      RestaurantMeta,
+      CategoryRepository,
+      RestaurantRepository,
+    ]),
   ],
   providers: [
     RestaurantResolver,

@@ -3,9 +3,17 @@ import { IsString, Length } from 'class-validator';
 import CoreEntity from 'src/common/entities/core.entity';
 import Order from 'src/orders/entities/order.entity';
 import User from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  RelationId,
+} from 'typeorm';
 import Category from './cetegory.entity';
 import Dish from './dish.entity';
+import RestaurantMeta from './restaurant.meta.entity';
 
 @InputType('RestaurantInputType', { isAbstract: true })
 @ObjectType()
@@ -67,6 +75,13 @@ class Restaurant extends CoreEntity {
     dish => dish.restaurant,
   )
   menu: Dish[];
+
+  @Field(_ => RestaurantMeta)
+  @OneToOne(
+    _ => RestaurantMeta,
+    meta => meta.restaurant,
+  )
+  meta: RestaurantMeta;
 }
 
 export default Restaurant;
