@@ -18,6 +18,10 @@ import User from './entities/user.entity';
 import { UserService } from './users.service';
 import { UserProfileOutput, UserProfileInput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import {
+  OwnerSendEmailInput,
+  OwnerSendEmailOutput,
+} from './dtos/owner-send-email.dto';
 
 @Resolver(_ => User)
 export class UserResolver {
@@ -77,5 +81,18 @@ export class UserResolver {
     @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
     return this.usersService.editProfile(authUser.id, editProfileInput);
+  }
+
+  /**
+   * @host dashboard
+   * @version 1.1
+   * @description 레스토랑 유저 이메일 인증
+   * @param ownerSendEmailInput
+   */
+  @Mutation(_ => OwnerSendEmailOutput)
+  async ownerSendEmail(
+    @Args('input') ownerSendEmailInput: OwnerSendEmailInput,
+  ): Promise<OwnerSendEmailOutput> {
+    return this.usersService.ownerSendEmail(ownerSendEmailInput);
   }
 }

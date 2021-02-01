@@ -7,7 +7,7 @@ import { RESULT_CODE } from 'src/common/common.constants';
 import { MailService } from 'src/mail/mail.service';
 import { JwtService } from 'src/jwt/jwt.service';
 
-import User from './entities/user.entity';
+import User, { UserRole } from './entities/user.entity';
 import Verification from './entities/verification.entity';
 import UserProfile from './entities/userProfile.entity';
 import AuthToken from './entities/authToken.entity';
@@ -22,19 +22,28 @@ import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { normalize } from 'src/libs/utils';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import EmailAuth from './entities/emailAuth.entity';
+import {
+  OwnerSendEmailInput,
+  OwnerSendEmailOutput,
+} from './dtos/owner-send-email.dto';
 
 @Injectable()
 export class UserService {
   private dataUserLoader: DataLoader<number, User, number>;
 
   constructor(
-    @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(User)
+    private readonly users: Repository<User>,
     @InjectRepository(Verification)
     private readonly verifications: Repository<Verification>,
     @InjectRepository(UserProfile)
     private readonly userProfies: Repository<UserProfile>,
     @InjectRepository(AuthToken)
     private readonly authTokens: Repository<AuthToken>,
+    @InjectRepository(EmailAuth)
+    private readonly emailAuths: Repository<EmailAuth>,
+
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
   ) {
@@ -53,6 +62,10 @@ export class UserService {
   userLoader(id: number) {
     return this.dataUserLoader.load(id);
   }
+
+  // 레스토랑 오너 회원가입 가입시 유저를 생성하는 것은 같지만 다른점은
+  // 이메일 인증에 적힌 주소로 들어가면 해당 주소의 코드값을 가지고 token을 생성
+  // 해당 토큰이 유효한 경우에만 이후 등록이 가능하다.
 
   // 유저 Id를 통해서 유저 찾기
   async findById(id: number) {
@@ -392,5 +405,49 @@ export class UserService {
     );
 
     return { refreshToken, accessToken };
+  }
+
+  /**
+   * @host dashboard
+   * @version 1.1
+   * @description 레스토랑 유저 이메일 인증
+   * @param ownerSendEmailInput
+   */
+  async ownerSendEmail(
+    ownerSendEmailInput: OwnerSendEmailInput,
+  ): Promise<OwnerSendEmailOutput> {
+    const email = ownerSendEmailInput.email.toLowerCase();
+
+    try {
+      const user = await this.users.findOne({
+        email,
+        role: UserRole.Owner,
+      });
+
+      if (!!user) {
+        return {
+          ok: true,
+          code: RESULT_CODE.SUCCESS,
+          registered: false,
+        };
+      }
+
+      const emailAuth = await this.emailAuths.save(
+        this.emailAuths.create({
+          email,
+        }),
+      );
+
+      await this.mailService.sendOwnerEmailAuth(email, emailAuth.code);
+
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        registered: true,
+      };
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   }
 }

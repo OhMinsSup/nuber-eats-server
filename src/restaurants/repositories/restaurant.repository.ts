@@ -5,13 +5,6 @@ import Restaurant from '../entities/restaurant.entity';
 @EntityRepository(Restaurant)
 export class RestaurantRepository extends Repository<Restaurant> {
   searchInputRestaurantNames(query: string, type: SearchTypeStatus) {
-    let openTime: FindOperator<any>;
-    if (type === SearchTypeStatus.Deliver) {
-      openTime = Raw(openTime => ``);
-    } else if (type === SearchTypeStatus.Shedule) {
-      // timeQuery = '';
-    }
-
     return this.find({
       relations: ['meta'],
       where: {

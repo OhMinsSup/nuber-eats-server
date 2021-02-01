@@ -6,7 +6,7 @@
 [travis-url]: https://travis-ci.org/nestjs/nest
 [linux-image]: https://img.shields.io/travis/nestjs/nest/master.svg?label=linux
 [linux-url]: https://travis-ci.org/nestjs/nest
-  
+
   <p align="center">A progressive <a href="http://nodejs.org" target="blank">Node.js</a> framework for building efficient and scalable server-side applications, heavily inspired by <a href="https://angular.io" target="blank">Angular</a>.</p>
     <p align="center">
 <a href="https://www.npmjs.com/~nestjscore"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
@@ -72,4 +72,16 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## License
 
-  Nest is [MIT licensed](LICENSE).
+Nest is [MIT licensed](LICENSE).
+
+## Nuber eats Server API Action
+
+[ ] 레스토랑 대시보드 회원가입 / 로그인 구현
+[ ] 레스토랑 대시보드 회원가입시 레스토랑 정보 받아서 레스토랑 필수로 생성
+[ ] 레스토랑을 생성 할 때 이메일 인증을 통해서 발송된 이메일의 주소를 통해서 페이지 이동
+
+### EP.1 대시보드 이메일 인증을 통한 회원가입
+
+[O] 회원가입이 안된 유저의 경우 Email 발송 API
+[X] 이메일 인증을 위한 팝업 폼 생성 - 30% 완성
+[X] 발송된 인증 메일을 통한 회원가입 (유저 및 레스토랑 등록)

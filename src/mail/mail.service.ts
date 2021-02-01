@@ -49,9 +49,32 @@ export class MailService {
   }
 
   sendVerificationEmail(email: string, username: string, code: string) {
-    this.sendEmail(email, '이메일 인증', 'email_template', [
+    return this.sendEmail(email, '이메일 인증', 'email_template', [
       { key: 'code', value: code },
       { key: 'username', value: username },
     ]);
+  }
+
+  sendOwnerEmailAuth(email: string, code: string) {
+    const keywords = {
+      keyword: '회원가입',
+      url: `http://127.0.0.1:3000/signup?code=${code}`,
+    };
+
+    return this.sendEmail(
+      email,
+      'Uber eats Dashboard 이메일 인증',
+      'velog-email',
+      [
+        {
+          key: 'keyword',
+          value: keywords.keyword,
+        },
+        {
+          key: 'url',
+          value: keywords.url,
+        },
+      ],
+    );
   }
 }
