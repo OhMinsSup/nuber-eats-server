@@ -22,11 +22,6 @@ import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { normalize } from 'src/libs/utils';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
-import EmailAuth from './entities/emailAuth.entity';
-import {
-  OwnerSendEmailInput,
-  OwnerSendEmailOutput,
-} from './dtos/owner-send-email.dto';
 
 @Injectable()
 export class UserService {
@@ -41,8 +36,6 @@ export class UserService {
     private readonly userProfies: Repository<UserProfile>,
     @InjectRepository(AuthToken)
     private readonly authTokens: Repository<AuthToken>,
-    @InjectRepository(EmailAuth)
-    private readonly emailAuths: Repository<EmailAuth>,
 
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
@@ -405,49 +398,5 @@ export class UserService {
     );
 
     return { refreshToken, accessToken };
-  }
-
-  /**
-   * @host dashboard
-   * @version 1.1
-   * @description 레스토랑 유저 이메일 인증
-   * @param ownerSendEmailInput
-   */
-  async ownerSendEmail(
-    ownerSendEmailInput: OwnerSendEmailInput,
-  ): Promise<OwnerSendEmailOutput> {
-    const email = ownerSendEmailInput.email.toLowerCase();
-
-    try {
-      const user = await this.users.findOne({
-        email,
-        role: UserRole.Owner,
-      });
-
-      if (!!user) {
-        return {
-          ok: true,
-          code: RESULT_CODE.SUCCESS,
-          registered: false,
-        };
-      }
-
-      const emailAuth = await this.emailAuths.save(
-        this.emailAuths.create({
-          email,
-        }),
-      );
-
-      await this.mailService.sendOwnerEmailAuth(email, emailAuth.code);
-
-      return {
-        ok: true,
-        code: RESULT_CODE.SUCCESS,
-        registered: true,
-      };
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
   }
 }

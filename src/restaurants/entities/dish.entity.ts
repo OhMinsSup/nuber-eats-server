@@ -1,5 +1,5 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { IsNumber, IsString, Length } from 'class-validator';
+import { IsBoolean, IsNumber, IsString, Length } from 'class-validator';
 import CoreEntity from 'src/common/entities/core.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 import Restaurant from './restaurant.entity';
@@ -34,6 +34,11 @@ class Dish extends CoreEntity {
   @Length(5)
   name: string;
 
+  @Field(_ => Boolean)
+  @Column({ type: 'bool', default: false })
+  @IsBoolean()
+  isMain: boolean;
+
   @Field(_ => Int)
   @Column()
   @IsNumber()
@@ -63,6 +68,18 @@ class Dish extends CoreEntity {
   @Field(_ => [DishOption], { nullable: true })
   @Column({ type: 'json', nullable: true })
   options?: DishOption[];
+
+  // @ManyToMany(type => Tag)
+  // @JoinTable({
+  //   name: 'post_tags',
+  //   joinColumn: {
+  //     name: 'fk_post_id'
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'fk_tag_id'
+  //   }
+  // })
+  // tags!: Tag[];
 }
 
 export default Dish;

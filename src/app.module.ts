@@ -24,7 +24,6 @@ import { AppController } from './app.controller';
 import RestaurantScore from './restaurants/entities/restaurant-score.entity';
 import RestaurantLike from './restaurants/entities/restaurant-like.entity';
 import RestaurantMeta from './restaurants/entities/restaurant.meta.entity';
-import EmailAuth from './users/entities/emailAuth.entity';
 
 @Module({
   imports: [
@@ -61,7 +60,6 @@ import EmailAuth from './users/entities/emailAuth.entity';
         User,
         Verification,
         UserProfile,
-        EmailAuth,
         AuthToken,
         Restaurant,
         RestaurantScore,
