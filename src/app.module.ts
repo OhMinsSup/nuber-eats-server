@@ -54,6 +54,7 @@ import RestaurantMeta from './restaurants/entities/restaurant.meta.entity';
             database: process.env.DB_NAME,
           }),
       synchronize: process.env.NODE_ENV !== 'prod',
+      dropSchema: true,
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
       entities: [

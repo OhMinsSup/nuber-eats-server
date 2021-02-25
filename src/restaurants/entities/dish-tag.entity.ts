@@ -17,6 +17,11 @@ class DishTag extends CoreEntity {
   @Column({ type: 'bool', default: false })
   @IsBoolean()
   isMain: boolean;
+
+  @Field(_ => Boolean)
+  @Column({ type: 'bool', default: false })
+  @IsBoolean()
+  hasSubDish: boolean;
 }
 
 export default DishTag;

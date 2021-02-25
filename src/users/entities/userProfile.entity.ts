@@ -13,13 +13,16 @@ class UserProfile extends CoreEntity {
   @IsString()
   displayName?: string;
 
-  @Column({ length: 255, nullable: true, type: 'varchar' })
+  @Column({ length: 255, nullable: true })
   @Field(_ => String, { nullable: true })
   @IsUrl()
   thumbnail?: string;
 
+  @Column('int')
+  userId: number;
+
   @OneToOne(_ => User, { onDelete: 'CASCADE' })
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user: User;
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Response } from 'express';
 
@@ -23,6 +24,11 @@ import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 export class UserResolver {
   constructor(private readonly usersService: UserService) {}
 
+  /**
+   * @version 1.0
+   * @description 회원가입 - ADD: Role이 Owner인 경우 레스토랑도 같이 생성
+   * @param createAccountInput
+   */
   @Mutation(_ => CreateAccountOutput)
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,

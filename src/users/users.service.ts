@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, getConnection } from 'typeorm';
 import * as DataLoader from 'dataloader';
 
 import { RESULT_CODE } from 'src/common/common.constants';
@@ -22,6 +22,8 @@ import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { normalize } from 'src/libs/utils';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
+import Restaurant from 'src/restaurants/entities/restaurant.entity';
+import RestaurantMeta from 'src/restaurants/entities/restaurant.meta.entity';
 
 @Injectable()
 export class UserService {
@@ -36,6 +38,12 @@ export class UserService {
     private readonly userProfies: Repository<UserProfile>,
     @InjectRepository(AuthToken)
     private readonly authTokens: Repository<AuthToken>,
+    // NEW
+    @InjectRepository(Restaurant)
+    private readonly restaurants: Repository<Restaurant>,
+    @InjectRepository(RestaurantMeta)
+    private readonly meats: Repository<RestaurantMeta>,
+    // NEW
 
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
@@ -273,14 +281,21 @@ export class UserService {
     }
   }
 
-  // 유저 생성
-  async createAccount({
-    username,
-    email,
-    password,
-    role,
-  }: CreateAccountInput): Promise<CreateAccountOutput> {
+  /**
+   * @version 1.0
+   * @description ADD: 유저 생성 => role Owner 레스토랑 생성 + transaction 추가
+   * @param createAccountInput
+   */
+  async createAccount(
+    createAccountInput: CreateAccountInput,
+  ): Promise<CreateAccountOutput> {
+    const queryRunner = getConnection().createQueryRunner();
+
+    await queryRunner.startTransaction();
+
+    const { username, email, password, role } = createAccountInput;
     try {
+      // 만약에 role 다른 (같은 유저 이메일및 유저명을 가진 사용자가 있는 경우) ?
       const exists = await this.users.findOne({
         where: [{ email }, { username }],
       });
@@ -303,24 +318,46 @@ export class UserService {
         this.users.create({ username, email, password, role }),
       );
 
+      // Owner로 생성하는 경우 레스토랑을 생성한다.
+      if (role === UserRole.Owner) {
+        // 레스토랑 생성
+        const newRestaurant = this.restaurants.create({
+          name: createAccountInput.storeName,
+          address: createAccountInput.storeAddress,
+          shortBio: createAccountInput.storeShortBio,
+          owner: user,
+        });
+        await this.restaurants.save(newRestaurant);
+      }
+
+      // 이메일 인증을 위한 모델 생성
       const verification = await this.verifications.save(
         this.verifications.create({
           user,
         }),
       );
 
+      // 이메일 발송
       this.mailService.sendVerificationEmail(
         user.email,
         user.username,
         verification.code,
       );
+
+      await queryRunner.commitTransaction();
+
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
       };
     } catch (e) {
       console.error(e);
+      // since we have errors let's rollback changes we made
+      await queryRunner.rollbackTransaction();
       throw e;
+    } finally {
+      // you need to release query runner which is manually created:
+      await queryRunner.release();
     }
   }
 

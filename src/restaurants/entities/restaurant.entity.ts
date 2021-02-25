@@ -1,16 +1,19 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsString, Length } from 'class-validator';
-import CoreEntity from 'src/common/entities/core.entity';
-import Order from 'src/orders/entities/order.entity';
-import User from 'src/users/entities/user.entity';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
   RelationId,
 } from 'typeorm';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { IsString, IsUrl, Length } from 'class-validator';
+
+import CoreEntity from 'src/common/entities/core.entity';
+import Order from 'src/orders/entities/order.entity';
+import User from 'src/users/entities/user.entity';
 import Category from './cetegory.entity';
 import Dish from './dish.entity';
 import RestaurantMeta from './restaurant.meta.entity';
@@ -20,20 +23,26 @@ import RestaurantMeta from './restaurant.meta.entity';
 @Entity()
 class Restaurant extends CoreEntity {
   @Field(_ => String)
-  @Column()
+  @Column({ length: 255 })
   @IsString()
   @Length(2)
   name: string;
 
-  @Field(_ => String)
-  @Column()
+  @Field(_ => String, { nullable: true })
+  @Column({ length: 255, nullable: true })
   @IsString()
+  @IsUrl()
   coverImg: string;
 
   @Field(_ => String)
-  @Column()
+  @Column({ length: 255 })
   @IsString()
   address: string;
+
+  @Field(_ => String, { nullable: true })
+  @Column({ length: 255, nullable: true })
+  @IsString()
+  shortBio: string;
 
   @Field(_ => Boolean)
   @Column({ default: false })
@@ -43,15 +52,11 @@ class Restaurant extends CoreEntity {
   @Column({ nullable: true })
   promotedUntil: Date;
 
-  @RelationId((restaurant: Restaurant) => restaurant.owner)
+  @Column('int')
   ownerId: number;
 
-  @Field(_ => User)
-  @ManyToOne(
-    _ => User,
-    user => user.restaurants,
-    { onDelete: 'CASCADE' },
-  )
+  @OneToOne(_ => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'ownerId' })
   owner: User;
 
   @Field(_ => [Order])

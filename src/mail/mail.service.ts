@@ -44,7 +44,7 @@ export class MailService {
       });
     } catch (e) {
       console.error(e);
-      return false;
+      throw e;
     }
   }
 
@@ -53,28 +53,5 @@ export class MailService {
       { key: 'code', value: code },
       { key: 'username', value: username },
     ]);
-  }
-
-  sendOwnerEmailAuth(email: string, code: string) {
-    const keywords = {
-      keyword: '회원가입',
-      url: `http://127.0.0.1:3000/signup?code=${code}`,
-    };
-
-    return this.sendEmail(
-      email,
-      'Uber eats Dashboard 이메일 인증',
-      'velog-email',
-      [
-        {
-          key: 'keyword',
-          value: keywords.keyword,
-        },
-        {
-          key: 'url',
-          value: keywords.url,
-        },
-      ],
-    );
   }
 }

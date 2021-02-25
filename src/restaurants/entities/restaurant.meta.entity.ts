@@ -14,13 +14,13 @@ class RestaurantMeta extends CoreEntity {
   @IsString()
   openTime: string;
 
-  @Field(_ => String, { nullable: false })
-  @Column({ nullable: false })
+  @Field(_ => String, { nullable: true })
+  @Column({ nullable: true })
   @IsString()
   closeTime: string;
 
-  @Field(_ => String, { nullable: false })
-  @Column({ type: 'text', nullable: false })
+  @Field(_ => String, { nullable: true })
+  @Column({ type: 'text', nullable: true })
   @IsString()
   description: string;
 

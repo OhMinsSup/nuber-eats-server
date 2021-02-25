@@ -64,12 +64,12 @@ class User extends CoreEntity {
   )
   profile: UserProfile;
 
-  @Field(_ => [Restaurant])
-  @OneToMany(
+  @Field(_ => Restaurant)
+  @OneToOne(
     _ => Restaurant,
     restaurant => restaurant.owner,
   )
-  restaurants: Restaurant[];
+  restaurant: Restaurant;
 
   @Field(_ => [Order])
   @OneToMany(
