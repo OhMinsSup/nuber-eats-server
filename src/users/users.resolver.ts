@@ -24,11 +24,6 @@ import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 export class UserResolver {
   constructor(private readonly usersService: UserService) {}
 
-  /**
-   * @version 1.0
-   * @description 회원가입 - ADD: Role이 Owner인 경우 레스토랑도 같이 생성
-   * @param createAccountInput
-   */
   @Mutation(_ => CreateAccountOutput)
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
@@ -62,10 +57,10 @@ export class UserResolver {
     return this.usersService.verifyEmail(code);
   }
 
-  @Query(_ => User)
+  @Query(_ => UserProfileOutput)
   @Role(['Any'])
-  me(@AuthUser() authUser: User) {
-    return this.usersService.userLoader(authUser.id);
+  me(@AuthUser() authUser: User): Promise<UserProfileOutput> {
+    return this.usersService.getUserProfile({ userId: authUser.id });
   }
 
   @Query(_ => UserProfileOutput)

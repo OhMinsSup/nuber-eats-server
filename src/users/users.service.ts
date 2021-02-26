@@ -11,6 +11,7 @@ import User, { UserRole } from './entities/user.entity';
 import Verification from './entities/verification.entity';
 import UserProfile from './entities/userProfile.entity';
 import AuthToken from './entities/authToken.entity';
+import Restaurant from 'src/restaurants/entities/restaurant.entity';
 
 import {
   CreateAccountInput,
@@ -22,8 +23,6 @@ import { VerifyEmailOutput } from './dtos/verify-email.dto';
 import { normalize } from 'src/libs/utils';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
-import Restaurant from 'src/restaurants/entities/restaurant.entity';
-import RestaurantMeta from 'src/restaurants/entities/restaurant.meta.entity';
 
 @Injectable()
 export class UserService {
@@ -38,12 +37,8 @@ export class UserService {
     private readonly userProfies: Repository<UserProfile>,
     @InjectRepository(AuthToken)
     private readonly authTokens: Repository<AuthToken>,
-    // NEW
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
-    @InjectRepository(RestaurantMeta)
-    private readonly meats: Repository<RestaurantMeta>,
-    // NEW
 
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
@@ -67,18 +62,6 @@ export class UserService {
   // 레스토랑 오너 회원가입 가입시 유저를 생성하는 것은 같지만 다른점은
   // 이메일 인증에 적힌 주소로 들어가면 해당 주소의 코드값을 가지고 token을 생성
   // 해당 토큰이 유효한 경우에만 이후 등록이 가능하다.
-
-  // 유저 Id를 통해서 유저 찾기
-  async findById(id: number) {
-    try {
-      const user = await this.users.findOne({ id });
-      if (!user) return null;
-      return user;
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
-  }
 
   // 유저 프로필 업데이트
   async editProfile(
@@ -141,12 +124,19 @@ export class UserService {
     }
   }
 
-  // 유저 프로필 정보
+  /**
+   * @version 1.0
+   * @description ADD: 유저 프로필 정보
+   * @param userProfileInput
+   */
   async getUserProfile({
     userId,
   }: UserProfileInput): Promise<UserProfileOutput> {
     try {
-      const user = await this.userLoader(userId);
+      const user = await this.users.findOne(userId, {
+        relations: ['profile'],
+      });
+
       if (!user) {
         return {
           ok: false,
@@ -155,7 +145,6 @@ export class UserService {
           user: null,
         };
       }
-
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
@@ -167,14 +156,23 @@ export class UserService {
     }
   }
 
-  // 회원가입시 이메일 인증
+  /**
+   * @version 1.0
+   * @description ADD: 회원가입시 이메일 인증 => transaction 추가
+   * @param code
+   */
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
+    const queryRunner = getConnection().createQueryRunner();
+
+    await queryRunner.startTransaction();
+
     try {
       const verification = await this.verifications.findOne(
         { code },
         { relations: ['user'] },
       );
 
+      // 정상적인 방법으로 접근 유저가 아닌 경우
       if (!verification) {
         return {
           ok: false,
@@ -183,14 +181,16 @@ export class UserService {
         };
       }
 
+      // 이미 인증한 유저는 또 인증을 하지 않아도 된다.
       if (verification.user.verified) {
         return {
           ok: false,
           code: RESULT_CODE.TOKEN_ALREADY_USED,
-          error: '이미 인증한 코드입니다.',
+          error: '이미 이메일 인증을 한 유저입니다.',
         };
       }
 
+      // 이메일 발송 후 1일이 지났거나 이미 인증한 경우
       const diff =
         new Date().getTime() - new Date(verification.createAt).getTime();
       if (diff > 1000 * 60 * 60 * 24 || verification.user.verified) {
@@ -201,6 +201,7 @@ export class UserService {
         };
       }
 
+      // 인증
       verification.user.verified = true;
 
       // 메일 인증여부 변경
@@ -215,15 +216,33 @@ export class UserService {
         }),
       );
 
-      return { ok: true, code: RESULT_CODE.SUCCESS };
+      await queryRunner.commitTransaction();
+
+      return { ok: true, code: RESULT_CODE.SUCCESS, userId: user.id };
     } catch (e) {
       console.error(e);
+      // since we have errors let's rollback changes we made
+      await queryRunner.rollbackTransaction();
       throw e;
+    } finally {
+      // you need to release query runner which is manually created:
+      await queryRunner.release();
     }
   }
 
-  // 유저 로그인
+  /**
+   * @version 1.0
+   * @description ADD: 유저 로그인 => transaction 추가
+   * @param loginInput
+   */
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
+    const nullableReturnValues = {
+      userId: null,
+      accessToken: null,
+      refreshToken: null,
+      role: null,
+    };
+
     try {
       // 유저가 존재하는지 체크
       const user = await this.users.findOne(
@@ -238,9 +257,7 @@ export class UserService {
           ok: false,
           code: RESULT_CODE.NOT_FOUND_USER,
           error: '존재하지않는 유저입니다. 회원가입을 해주세요.',
-          userId: null,
-          accessToken: null,
-          refreshToken: null,
+          ...nullableReturnValues,
         };
       }
 
@@ -249,9 +266,7 @@ export class UserService {
           ok: false,
           code: RESULT_CODE.USER_VERFIED_ERROR,
           error: '이메일 인증이 안된 계정입니다.',
-          userId: null,
-          accessToken: null,
-          refreshToken: null,
+          ...nullableReturnValues,
         };
       }
 
@@ -262,9 +277,7 @@ export class UserService {
           ok: false,
           code: RESULT_CODE.EXISTS_PASSWORD,
           error: '비밀번호가 일치하지않습니다.',
-          userId: null,
-          accessToken: null,
-          refreshToken: null,
+          ...nullableReturnValues,
         };
       }
 
@@ -273,6 +286,7 @@ export class UserService {
         ok: true,
         code: RESULT_CODE.SUCCESS,
         userId: user.id,
+        role: user.role,
         ...tokens,
       };
     } catch (e) {
@@ -294,6 +308,7 @@ export class UserService {
     await queryRunner.startTransaction();
 
     const { username, email, password, role } = createAccountInput;
+
     try {
       // 만약에 role 다른 (같은 유저 이메일및 유저명을 가진 사용자가 있는 경우) ?
       const exists = await this.users.findOne({
@@ -361,7 +376,27 @@ export class UserService {
     }
   }
 
-  // 유저 토큰 생성
+  /**
+   * @version 1.0
+   * @description 유저 Id를 통해서 유저 찾기
+   * @param id
+   */
+  async findById(id: number) {
+    try {
+      const user = await this.users.findOne({ id });
+      if (!user) return null;
+      return user;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+
+  /**
+   * @version 1.0
+   * @description 유저 토큰 생성
+   * @param userId
+   */
   async generateUserToken(userId: number) {
     const authToken = await this.authTokens.save(
       this.authTokens.create({

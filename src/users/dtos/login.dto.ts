@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Field, InputType, Int, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dtos/output.dto';
-import User from '../entities/user.entity';
+import User, { UserRole } from '../entities/user.entity';
 
 @InputType()
 export class LoginInput extends PickType(User, ['email', 'password']) {}
@@ -13,4 +14,6 @@ export class LoginOutput extends CoreOutput {
   refreshToken?: string;
   @Field(_ => Int, { nullable: true })
   userId?: number;
+  @Field(_ => UserRole, { nullable: true })
+  role?: UserRole;
 }
