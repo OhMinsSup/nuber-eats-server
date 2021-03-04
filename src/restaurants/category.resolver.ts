@@ -5,12 +5,18 @@ import {
   ResolveField,
   Int,
   Parent,
+  Mutation,
 } from '@nestjs/graphql';
+import { Role } from 'src/auth/role.decorator';
 import {
   AllCategoriesInput,
   AllCategoriesOutput,
 } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category';
+import {
+  CreateCategoryInput,
+  CreateCategoryOutput,
+} from './dtos/create-category.dto';
 import Category from './entities/cetegory.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -21,6 +27,14 @@ export class CategoryResolver {
   @ResolveField(_ => Int)
   restaurantCount(@Parent() category: Category): Promise<number> {
     return this.restaurantService.countRestaurants(category);
+  }
+
+  @Mutation(_ => CreateCategoryOutput)
+  @Role(['Owner'])
+  async createCategory(
+    @Args('input') createCategoryInput: CreateCategoryInput,
+  ): Promise<CreateCategoryOutput> {
+    return this.restaurantService.createCategory(createCategoryInput);
   }
 
   /**

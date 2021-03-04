@@ -68,18 +68,6 @@ class Dish extends CoreEntity {
   @Field(_ => [DishOption], { nullable: true })
   @Column({ type: 'json', nullable: true })
   options?: DishOption[];
-
-  // @ManyToMany(type => Tag)
-  // @JoinTable({
-  //   name: 'post_tags',
-  //   joinColumn: {
-  //     name: 'fk_post_id'
-  //   },
-  //   inverseJoinColumn: {
-  //     name: 'fk_tag_id'
-  //   }
-  // })
-  // tags!: Tag[];
 }
 
 export default Dish;

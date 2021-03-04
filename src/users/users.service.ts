@@ -26,8 +26,6 @@ import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 
 @Injectable()
 export class UserService {
-  private dataUserLoader: DataLoader<number, User, number>;
-
   constructor(
     @InjectRepository(User)
     private readonly users: Repository<User>,
@@ -42,22 +40,7 @@ export class UserService {
 
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
-  ) {
-    this.dataUserLoader = new DataLoader<number, User>(
-      async (ids: number[]) => {
-        const users = await this.users.findByIds(ids, {
-          relations: ['profile'],
-        });
-        const normalized = normalize(users, user => user.id);
-        return ids.map(id => normalized[id]);
-      },
-    );
-  }
-
-  // dataloader를 이용한 data fetch
-  userLoader(id: number) {
-    return this.dataUserLoader.load(id);
-  }
+  ) {}
 
   // 레스토랑 오너 회원가입 가입시 유저를 생성하는 것은 같지만 다른점은
   // 이메일 인증에 적힌 주소로 들어가면 해당 주소의 코드값을 가지고 token을 생성

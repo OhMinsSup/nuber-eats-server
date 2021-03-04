@@ -4,12 +4,16 @@ import * as DataLoader from 'dataloader';
 import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
-import { Raw, Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import {
   AllCategoriesInput,
   AllCategoriesOutput,
 } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category';
+import {
+  CreateCategoryInput,
+  CreateCategoryOutput,
+} from './dtos/create-category.dto';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import {
   CreateRestaurantInput,
@@ -493,6 +497,41 @@ export class RestaurantService {
     } catch (e) {
       console.error(e);
       throw e;
+    }
+  }
+
+  /**
+   * @version 1.0
+   * @description owner 카테고리 생성 - transaction 추가
+   */
+  async createCategory(
+    createCategoryInput: CreateCategoryInput,
+  ): Promise<CreateCategoryOutput> {
+    const queryRunner = getConnection().createQueryRunner();
+
+    await queryRunner.startTransaction();
+
+    try {
+      const category = await this.categories.getOrCreate(
+        createCategoryInput.categoryName,
+        createCategoryInput.coverImg,
+      );
+
+      await queryRunner.commitTransaction();
+
+      return {
+        ok: true,
+        code: RESULT_CODE.SUCCESS,
+        category,
+      };
+    } catch (e) {
+      console.error(e);
+      // since we have errors let's rollback changes we made
+      await queryRunner.rollbackTransaction();
+      throw e;
+    } finally {
+      // you need to release query runner which is manually created:
+      await queryRunner.release();
     }
   }
 }
