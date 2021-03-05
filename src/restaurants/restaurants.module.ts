@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryResolver } from './category.resolver';
+import { CategoryService } from './category.service';
 import { DishResolver } from './dish.resolver';
 
 import Dish from './entities/dish.entity';
@@ -25,6 +26,7 @@ import { RestaurantService } from './restaurants.service';
     CategoryResolver,
     DishResolver,
     RestaurantService,
+    CategoryService,
   ],
 })
 export class RestaurantsModule {}

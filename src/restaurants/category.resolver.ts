@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Args,
   Resolver,
@@ -8,6 +9,7 @@ import {
   Mutation,
 } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.decorator';
+import { CategoryService } from './category.service';
 import {
   AllCategoriesInput,
   AllCategoriesOutput,
@@ -17,16 +19,19 @@ import {
   CreateCategoryInput,
   CreateCategoryOutput,
 } from './dtos/create-category.dto';
+import {
+  DeleteCategoryInput,
+  DeleteCategoryOutput,
+} from './dtos/delete-category.dto';
 import Category from './entities/cetegory.entity';
-import { RestaurantService } from './restaurants.service';
 
 @Resolver(of => Category)
 export class CategoryResolver {
-  constructor(private readonly restaurantService: RestaurantService) {}
+  constructor(private readonly categoryService: CategoryService) {}
 
   @ResolveField(_ => Int)
   restaurantCount(@Parent() category: Category): Promise<number> {
-    return this.restaurantService.countRestaurants(category);
+    return this.categoryService.countRestaurants(category);
   }
 
   @Mutation(_ => CreateCategoryOutput)
@@ -34,25 +39,28 @@ export class CategoryResolver {
   async createCategory(
     @Args('input') createCategoryInput: CreateCategoryInput,
   ): Promise<CreateCategoryOutput> {
-    return this.restaurantService.createCategory(createCategoryInput);
+    return this.categoryService.createCategory(createCategoryInput);
   }
 
-  /**
-   * @version 1.1
-   * @description 추가 API 카테고리 무한 스크롤 추가
-   * @param allCategoriesInput
-   */
+  @Mutation(_ => DeleteCategoryOutput)
+  @Role(['Owner'])
+  async deleteCategory(
+    @Args('input') deleteCategoryInput: DeleteCategoryInput,
+  ): Promise<DeleteCategoryOutput> {
+    return this.categoryService.deleteCategory(deleteCategoryInput);
+  }
+
   @Query(_ => AllCategoriesOutput)
   allCategories(
     @Args('input') allCategoriesInput: AllCategoriesInput,
   ): Promise<AllCategoriesOutput> {
-    return this.restaurantService.allCategories(allCategoriesInput);
+    return this.categoryService.allCategories(allCategoriesInput);
   }
 
   @Query(_ => CategoryOutput)
   category(
     @Args('input') categoryInput: CategoryInput,
   ): Promise<CategoryOutput> {
-    return this.restaurantService.findCategoryBySlug(categoryInput);
+    return this.categoryService.findCategoryBySlug(categoryInput);
   }
 }

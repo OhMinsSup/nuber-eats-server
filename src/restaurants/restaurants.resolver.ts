@@ -79,23 +79,6 @@ export class RestaurantResolver {
     return this.restaurantService.getRestaurants(getRestaurantsInput);
   }
 
-  /**
-   * @version 1.2
-   * @description 변경 API 가게 등록 (meta 데이터 추가)
-   * @param createRestaurantInput
-   */
-  @Mutation(_ => CreateRestaurantOutput)
-  @Role(['Owner'])
-  createRestaurant(
-    @AuthUser() authUser: User,
-    @Args('input') createRestaurantInput: CreateRestaurantInput,
-  ): Promise<CreateRestaurantOutput> {
-    return this.restaurantService.createRestaurant(
-      authUser,
-      createRestaurantInput,
-    );
-  }
-
   @Mutation(_ => EditRestaurantOutput)
   @Role(['Owner'])
   editRestaurant(

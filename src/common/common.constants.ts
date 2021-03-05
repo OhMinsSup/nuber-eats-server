@@ -30,6 +30,8 @@ export const RESULT_CODE = {
   ORDER_INFO_NOT_SEE_ERROR: 50002,
   ORDER_INFO_NOT_EDIT_ERROR: 50003,
   USER_VERFIED_ERROR: 50004,
+
+  DELETED_CONTENT_CATEGORY: 60001,
 };
 
 export const ResGql = createParamDecorator(
