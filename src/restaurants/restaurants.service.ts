@@ -6,10 +6,6 @@ import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
-import {
-  CreateRestaurantInput,
-  CreateRestaurantOutput,
-} from './dtos/create-restaurant.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 import {
   DeleteRestaurantInput,
@@ -33,7 +29,7 @@ import {
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
 import Category from './entities/cetegory.entity';
-import Dish from './entities/dish.entity';
+import Dish from '../dishs/entities/dish.entity';
 import Restaurant from './entities/restaurant.entity';
 import RestaurantMeta from './entities/restaurant.meta.entity';
 import { CategoryRepository } from './repositories/category.repository';

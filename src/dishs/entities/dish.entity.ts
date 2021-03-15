@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { IsBoolean, IsNumber, IsString, Length } from 'class-validator';
 import CoreEntity from 'src/common/entities/core.entity';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
-import Restaurant from './restaurant.entity';
+import Restaurant from '../../restaurants/entities/restaurant.entity';
 
 @InputType('DishChoiceInputType', { isAbstract: true })
 @ObjectType()
@@ -34,11 +35,6 @@ class Dish extends CoreEntity {
   @Length(5)
   name: string;
 
-  @Field(_ => Boolean)
-  @Column({ type: 'bool', default: false })
-  @IsBoolean()
-  isMain: boolean;
-
   @Field(_ => Int)
   @Column()
   @IsNumber()
@@ -65,6 +61,9 @@ class Dish extends CoreEntity {
   @RelationId((dish: Dish) => dish.restaurant)
   restaurantId: number;
 
+  /**
+   * @deprecated 준비중
+   */
   @Field(_ => [DishOption], { nullable: true })
   @Column({ type: 'json', nullable: true })
   options?: DishOption[];

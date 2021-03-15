@@ -5,25 +5,30 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Request, Response } from 'express';
 
+import { OrderModule } from './orders/orders.module';
+import { AppController } from './app.controller';
 import { RestaurantsModule } from './restaurants/restaurants.module';
-import User from './users/entities/user.entity';
-import Verification from './users/entities/verification.entity';
 import { UserModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
-import UserProfile from './users/entities/userProfile.entity';
-import AuthToken from './users/entities/authToken.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { AuthModule } from './auth/auth.module';
+
+import User from './users/entities/user.entity';
+import Verification from './users/entities/verification.entity';
+import UserProfile from './users/entities/userProfile.entity';
+import AuthToken from './users/entities/authToken.entity';
 import Restaurant from './restaurants/entities/restaurant.entity';
-import Dish from './restaurants/entities/dish.entity';
+import Dish from './dishs/entities/dish.entity';
 import Category from './restaurants/entities/cetegory.entity';
 import Order from './orders/entities/order.entity';
 import OrderItem from './orders/entities/order-item.entity';
-import { OrderModule } from './orders/orders.module';
-import { AppController } from './app.controller';
 import RestaurantScore from './restaurants/entities/restaurant-score.entity';
 import RestaurantLike from './restaurants/entities/restaurant-like.entity';
 import RestaurantMeta from './restaurants/entities/restaurant.meta.entity';
+import DishCategory from './dishs/entities/dish-category.entity';
+import DishSubMenu from './dishs/entities/dish-subMenu.entity';
+import DishSubMenuOption from './dishs/entities/dish-submenu-option.entity';
+import DishsCategorys from './dishs/entities/dishs-categorys.entity';
 
 @Module({
   imports: [
@@ -67,6 +72,10 @@ import RestaurantMeta from './restaurants/entities/restaurant.meta.entity';
         RestaurantLike,
         RestaurantMeta,
         Dish,
+        DishsCategorys,
+        DishCategory,
+        DishSubMenu,
+        DishSubMenuOption,
         Category,
         Order,
         OrderItem,
