@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as DataLoader from 'dataloader';
 import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
-import Dish from 'src/restaurants/entities/dish.entity';
+import Dish from 'src/dishs/entities/dish.entity';
 import Restaurant from 'src/restaurants/entities/restaurant.entity';
 import User, { UserRole } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';

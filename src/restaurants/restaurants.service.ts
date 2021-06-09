@@ -4,7 +4,7 @@ import * as DataLoader from 'dataloader';
 import { RESULT_CODE } from 'src/common/common.constants';
 import { normalize } from 'src/libs/utils';
 import User from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { getConnection, Repository } from 'typeorm';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 import {
@@ -191,13 +191,23 @@ export class RestaurantService {
     }
   }
 
-  // 가게 수정
+  /**
+   * @version 1.0
+   * @description ADD: 가게 수정 => transaction 추가
+   * @param owner
+   * @param editRestaurantInput
+   */
   async editRestaurant(
     owner: User,
     editRestaurantInput: EditRestaurantInput,
   ): Promise<EditRestaurantOutput> {
+    const queryRunner = getConnection().createQueryRunner();
+
     try {
-      const restaurant = await this.restaurants.findOne(
+      await queryRunner.startTransaction();
+
+      const restaurant = await queryRunner.manager.findOne(
+        Restaurant,
         editRestaurantInput.restaurantId,
       );
 
@@ -221,10 +231,12 @@ export class RestaurantService {
       if (editRestaurantInput.categoryName) {
         category = await this.categories.getOrCreate(
           editRestaurantInput.categoryName,
+          editRestaurantInput.coverImg,
+          queryRunner,
         );
       }
 
-      await this.restaurants.save([
+      await queryRunner.manager.save(Restaurant, [
         {
           id: editRestaurantInput.restaurantId,
           ...editRestaurantInput,
@@ -232,13 +244,21 @@ export class RestaurantService {
         },
       ]);
 
+      await queryRunner.commitTransaction();
+
       return {
         ok: true,
         code: RESULT_CODE.SUCCESS,
       };
     } catch (e) {
       console.error(e);
+      // since we have errors let's rollback changes we made
+      await queryRunner.rollbackTransaction();
+
       throw e;
+    } finally {
+      // you need to release query runner which is manually created:
+      await queryRunner.release();
     }
   }
 

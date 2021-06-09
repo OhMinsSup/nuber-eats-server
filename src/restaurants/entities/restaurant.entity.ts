@@ -15,7 +15,7 @@ import CoreEntity from 'src/common/entities/core.entity';
 import Order from 'src/orders/entities/order.entity';
 import User from 'src/users/entities/user.entity';
 import Category from './cetegory.entity';
-import Dish from './dish.entity';
+import Dish from '../../dishs/entities/dish.entity';
 import RestaurantMeta from './restaurant.meta.entity';
 
 @InputType('RestaurantInputType', { isAbstract: true })

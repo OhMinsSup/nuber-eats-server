@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, getConnection } from 'typeorm';
-import * as DataLoader from 'dataloader';
 
 import { RESULT_CODE } from 'src/common/common.constants';
 import { MailService } from 'src/mail/mail.service';
@@ -20,7 +19,6 @@ import {
 
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { VerifyEmailOutput } from './dtos/verify-email.dto';
-import { normalize } from 'src/libs/utils';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 
@@ -147,10 +145,11 @@ export class UserService {
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     const queryRunner = getConnection().createQueryRunner();
 
-    await queryRunner.startTransaction();
-
     try {
-      const verification = await this.verifications.findOne(
+      await queryRunner.startTransaction();
+
+      const verification = await queryRunner.manager.findOne(
+        Verification,
         { code },
         { relations: ['user'] },
       );
@@ -188,16 +187,15 @@ export class UserService {
       verification.user.verified = true;
 
       // 메일 인증여부 변경
-      const user = await this.users.save(verification.user);
+      const user = await queryRunner.manager.save(verification.user);
       // 인증에 성공한 경우 인증메일 테이블 삭제
-      await this.verifications.delete(verification.id);
+      await queryRunner.manager.delete(Verification, verification.id);
+
+      const userProfileRepo = new UserProfile();
+      userProfileRepo.user = user;
 
       // 유저 프로필 생성
-      await this.userProfies.save(
-        this.userProfies.create({
-          user,
-        }),
-      );
+      await queryRunner.manager.save(userProfileRepo);
 
       await queryRunner.commitTransaction();
 
@@ -288,13 +286,12 @@ export class UserService {
   ): Promise<CreateAccountOutput> {
     const queryRunner = getConnection().createQueryRunner();
 
-    await queryRunner.startTransaction();
-
     const { username, email, password, role } = createAccountInput;
 
     try {
+      await queryRunner.startTransaction();
       // 만약에 role 다른 (같은 유저 이메일및 유저명을 가진 사용자가 있는 경우) ?
-      const exists = await this.users.findOne({
+      const exists = await queryRunner.manager.findOne(User, {
         where: [{ email }, { username }],
       });
 
@@ -312,28 +309,31 @@ export class UserService {
         };
       }
 
-      const user = await this.users.save(
-        this.users.create({ username, email, password, role }),
-      );
+      const userRepo = new User();
+      userRepo.username = username;
+      userRepo.email = email;
+      userRepo.password = password;
+      userRepo.role = role;
+
+      const user = await queryRunner.manager.save(userRepo);
 
       // Owner로 생성하는 경우 레스토랑을 생성한다.
       if (role === UserRole.Owner) {
         // 레스토랑 생성
-        const newRestaurant = this.restaurants.create({
-          name: createAccountInput.storeName,
-          address: createAccountInput.storeAddress,
-          shortBio: createAccountInput.storeShortBio,
-          owner: user,
-        });
-        await this.restaurants.save(newRestaurant);
+        const restaurantRepo = new Restaurant();
+        restaurantRepo.name = createAccountInput.storeName;
+        restaurantRepo.address = createAccountInput.storeAddress;
+        restaurantRepo.shortBio = createAccountInput.storeShortBio;
+        restaurantRepo.owner = user;
+
+        await queryRunner.manager.save(restaurantRepo);
       }
 
+      const verificationRepo = new Verification();
+      verificationRepo.user = user;
+
       // 이메일 인증을 위한 모델 생성
-      const verification = await this.verifications.save(
-        this.verifications.create({
-          user,
-        }),
-      );
+      const verification = await queryRunner.manager.save(verificationRepo);
 
       // 이메일 발송
       this.mailService.sendVerificationEmail(

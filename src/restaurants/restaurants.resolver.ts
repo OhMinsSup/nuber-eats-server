@@ -7,10 +7,6 @@ import Restaurant from './entities/restaurant.entity';
 import { RestaurantService } from './restaurants.service';
 
 import {
-  CreateRestaurantInput,
-  CreateRestaurantOutput,
-} from './dtos/create-restaurant.dto';
-import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
 } from './dtos/delete-restaurant.dto';

@@ -1,10 +1,39 @@
-import { EntityRepository, getManager, Repository } from 'typeorm';
+import { EntityRepository, getManager, QueryRunner, Repository } from 'typeorm';
 import { RawCategoriesData } from '../dtos/all-categories.dto';
 import Category from '../entities/cetegory.entity';
 
 @EntityRepository(Category)
 export class CategoryRepository extends Repository<Category> {
-  async getOrCreate(name: string, coverImg?: string): Promise<Category> {
+  /**
+   * @version 1.0
+   * @description 카테고리가 존재하면 존재하는 카테고리를 넘겨주고 없으면 카테고리 생성  ADD: 카테고리 => transaction queryRunner 추가
+   * @param name
+   * @param coverImg
+   * @param queryRunner
+   */
+  async getOrCreate(
+    name: string,
+    coverImg?: string,
+    queryRunner?: QueryRunner,
+  ): Promise<Category> {
+    if (queryRunner) {
+      const categoryName = name.trim().toLowerCase();
+      const categorySlug = categoryName.replace(/ /g, '-');
+      let category = await queryRunner.manager.findOne(Category, {
+        slug: categorySlug,
+      });
+
+      if (!category) {
+        const categoryRepo = new Category();
+        categoryRepo.name = categoryName;
+        categoryRepo.slug = categorySlug;
+        categoryRepo.coverImg = coverImg;
+
+        category = await queryRunner.manager.save(categoryRepo);
+      }
+      return category;
+    }
+
     const categoryName = name.trim().toLowerCase();
     const categorySlug = categoryName.replace(/ /g, '-');
     let category = await this.findOne({ slug: categorySlug });
