@@ -20,14 +20,13 @@ import {
   SearchRestaurantInput,
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
-import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 import { MyRestaurantInput, MyRestaurantOutput } from './dtos/my-restaurant';
 import {
   GetRestaurantsInput,
   GetRestaurantsOutput,
 } from './dtos/get-restaurants.dto';
 
-@Resolver(of => Restaurant)
+@Resolver(_ => Restaurant)
 export class RestaurantResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
@@ -96,12 +95,12 @@ export class RestaurantResolver {
     );
   }
 
-  @Query(_ => MyRestaurantsOutput)
-  @Role(['Owner'])
-  myRestaurants(@AuthUser() owner: User): Promise<MyRestaurantsOutput> {
-    return this.restaurantService.myRestaurants(owner);
-  }
-
+  /**
+   * @version 1.1
+   * @description ADD: 나의 레스토랑 정보를 가져온다.
+   * @param owner
+   * @param myRestaurantInput
+   */
   @Query(_ => MyRestaurantOutput)
   @Role(['Owner'])
   myRestaurant(

@@ -21,7 +21,6 @@ import {
   GetRestaurantsOutput,
 } from './dtos/get-restaurants.dto';
 import { MyRestaurantInput, MyRestaurantOutput } from './dtos/my-restaurant';
-import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 import {
@@ -63,22 +62,12 @@ export class RestaurantService {
     return this.dataRestaurantLoader.load(id);
   }
 
-  // 내가게
-  async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
-    try {
-      const restaurants = await this.restaurants.find({ owner });
-      return {
-        restaurants,
-        ok: true,
-        code: RESULT_CODE.SUCCESS,
-      };
-    } catch (e) {
-      console.error(e);
-      throw e;
-    }
-  }
-
-  // 내가게 상세
+  /**
+   * @version 1.0
+   * @description ADD: 나의 레스토랑 정보를 가져온다.
+   * @param owner
+   * @param editRestaurantInput
+   */
   async myRestaurant(
     owner: User,
     { id }: MyRestaurantInput,
@@ -89,9 +78,9 @@ export class RestaurantService {
         { relations: ['menu', 'orders'] },
       );
       return {
-        restaurant,
         ok: true,
         code: RESULT_CODE.SUCCESS,
+        restaurant,
       };
     } catch (e) {
       console.error(e);
